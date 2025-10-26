@@ -1,0 +1,8 @@
+{
+  "name": "ChatNova AI",
+  "description": "A professional dark-mode AI web app with a premium chatbot interface supporting voice and image input, and a smart Passport Size Photo Generator with AI background removal and color toggles.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
