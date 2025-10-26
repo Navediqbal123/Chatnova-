@@ -22,7 +22,7 @@ export const generateChatResponse = async (prompt: string, imageBase64?: string,
                 },
             });
         }
-        
+
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: 'gemini-2.5-pro',
             contents: { parts: parts },
@@ -42,7 +42,7 @@ export const processPassportPhoto = async (imageBase64: string, mimeType: string
         if (removeBg) {
             prompt += " Meticulously remove the background, ensuring clean edges around the subject (hair, clothes). The output background must be transparent.";
         }
-        prompt += " The final output must be a PNG image of the subject, cropped to a 1:1 aspect ratio focusing on the head and shoulders.";
+        prompt += " The final output must be a PNG image of the subject, cropped to a 1:1 aspect ratio. The crop must be a standard passport-style headshot, framing the subject from the top of their head down to their upper shoulders. Ensure there is a small amount of space above the head and that the head is centered. Do not crop out the top of the subject's hair or the visible part of their shoulders.";
 
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -61,7 +61,7 @@ export const processPassportPhoto = async (imageBase64: string, mimeType: string
                 responseModalities: [Modality.IMAGE],
             },
         });
-        
+
         const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
 
         if (imagePart && imagePart.inlineData) {
