@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface AuthViewProps {
   onAuthSuccess: (username: string) => void;
@@ -11,6 +12,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,21 +26,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         if (user) {
           onAuthSuccess(user.username);
         } else {
-          setError('Invalid email or password.');
+          setError(t('invalidCredentials'));
         }
       } catch (err) {
-        setError('An error occurred. Please try again.');
+        setError(t('errorOccurred'));
       }
     } else {
       // Signup logic
        if (!username || !email || !password) {
-        setError('All fields are required.');
+        setError(t('allFieldsRequired'));
         return;
       }
       try {
         const users = JSON.parse(localStorage.getItem('chatNovaUsers') || '[]');
         if (users.some((u: any) => u.email === email)) {
-          setError('An account with this email already exists.');
+          setError(t('emailExists'));
           return;
         }
         const newUser = { username, email, password };
@@ -46,7 +48,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
         localStorage.setItem('chatNovaUsers', JSON.stringify(users));
         onAuthSuccess(newUser.username);
       } catch (err) {
-         setError('An error occurred during signup. Please try again.');
+         setError(t('errorSignup'));
       }
     }
   };
@@ -56,9 +58,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
             <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 glow-text">
-              Welcome to ChatNova AI
+              {t('welcomeToChatNova')}
             </h1>
-            <p className="text-gray-400 mt-2">The future of conversation is here.</p>
+            <p className="text-gray-400 mt-2">{t('futureIsHere')}</p>
         </div>
         
         <div className="bg-[#11111b]/80 backdrop-blur-sm border border-gray-800/50 rounded-2xl shadow-2xl p-8">
@@ -67,13 +69,13 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
                     onClick={() => setIsLoginView(true)}
                     className={`flex-1 py-3 text-sm font-semibold transition-colors duration-300 ${isLoginView ? 'text-purple-300 border-b-2 border-purple-400' : 'text-gray-500 hover:text-gray-300'}`}
                 >
-                    Login
+                    {t('login')}
                 </button>
                 <button
                     onClick={() => setIsLoginView(false)}
                     className={`flex-1 py-3 text-sm font-semibold transition-colors duration-300 ${!isLoginView ? 'text-purple-300 border-b-2 border-purple-400' : 'text-gray-500 hover:text-gray-300'}`}
                 >
-                    Sign Up
+                    {t('signUp')}
                 </button>
             </div>
             
@@ -81,7 +83,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
                 {!isLoginView && (
                     <input
                         type="text"
-                        placeholder="Username"
+                        placeholder={t('username')}
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
@@ -90,7 +92,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
                 )}
                 <input
                     type="email"
-                    placeholder="Email Address"
+                    placeholder={t('emailAddress')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
@@ -98,7 +100,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
                 />
                 <input
                     type="password"
-                    placeholder="Password"
+                    placeholder={t('password')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
@@ -111,7 +113,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onAuthSuccess }) => {
                     type="submit"
                     className="w-full py-3 rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed glow-border font-bold text-lg"
                 >
-                    {isLoginView ? 'Login' : 'Create Account'}
+                    {isLoginView ? t('login') : t('createAccount')}
                 </button>
             </form>
         </div>

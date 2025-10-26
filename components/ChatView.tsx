@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { ChatSession, Message } from '../types';
 import { generateChatResponse } from '../services/geminiService';
@@ -13,6 +14,7 @@ import { FileIcon } from './icons/FileIcon';
 import { CameraCaptureModal } from './CameraCaptureModal';
 import { PlusIcon } from './icons/PlusIcon';
 import { GoogleDriveIcon } from './icons/GoogleDriveIcon';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ChatViewProps {
   session: ChatSession;
@@ -56,6 +58,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [areGoogleApisReady, setAreGoogleApisReady] = useState(false);
   const [isPlusIconSpinning, setPlusIconSpinning] = useState(false);
+  const { t } = useTranslation();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docFileInputRef = useRef<HTMLInputElement>(null);
@@ -98,17 +101,17 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
         userMessage.image = `data:${uploadedImage.file.type};base64,${uploadedImage.base64}`;
     }
     if (uploadedFile) {
-        userMessage.text = `${input.trim()}\n(Attached: ${uploadedFile.name})`;
+        userMessage.text = `${input.trim()}\n(${t('attached')}: ${uploadedFile.name})`;
     }
 
     const updatedMessages = [...session.messages, userMessage];
-    const newTitle = session.messages.length === 0 ? (input.trim().substring(0, 20) || (uploadedImage ? "Image Analysis" : "File Analysis")) : session.title;
+    const newTitle = session.messages.length === 0 ? (input.trim().substring(0, 20) || (uploadedImage ? t('imageAnalysis') : t('fileAnalysis'))) : session.title;
     updateSession({...session, messages: updatedMessages, title: newTitle});
 
     let promptToSend = input.trim();
     if (uploadedFile) {
-        const userQuery = input.trim() || 'Analyze the following content and provide a detailed summary.';
-        promptToSend = `CONTEXT FROM UPLOADED FILE (${uploadedFile.name}):\n\n${uploadedFile.content}\n\nUSER REQUEST:\n${userQuery}`;
+        const userQuery = input.trim() || t('analyzeContentSummary');
+        promptToSend = `${t('contextFromFile', { fileName: uploadedFile.name })}\n\n${uploadedFile.content}\n\n${t('userRequest')}:\n${userQuery}`;
     }
 
     setInput('');
@@ -122,7 +125,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
       updateSession({...session, messages: [...updatedMessages, modelMessage], title: newTitle});
     } catch (error) {
       console.error("Failed to get response:", error);
-      const errorMessage: Message = { role: 'model', text: 'Error: Could not get a response.' };
+      const errorMessage: Message = { role: 'model', text: t('errorCouldNotGetResponse') };
       updateSession({...session, messages: [...updatedMessages, errorMessage], title: newTitle});
     } finally {
       setIsLoading(false);
@@ -167,7 +170,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
   
   const handleGoogleDriveClick = async () => {
     if (!areGoogleApisReady) {
-        alert('Google Drive integration is still loading. Please wait a moment.');
+        alert(t('googleDriveLoading'));
         return;
     }
     setIsAttachmentMenuOpen(false);
@@ -209,9 +212,9 @@ const handleAttachmentToggle = () => {
           <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
             <NovaIcon className="w-24 h-24 text-purple-400 mb-4" />
             <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 glow-text">
-              Welcome to ChatNova AI
+              {t('welcomeToChatNova')}
             </h1>
-            <p className="mt-2 text-lg">Start a conversation below.</p>
+            <p className="mt-2 text-lg">{t('startConversation')}</p>
           </div>
         ) : (
           session.messages.map((msg, index) => (
@@ -233,7 +236,7 @@ const handleAttachmentToggle = () => {
                     <img src={`data:${uploadedImage.file.type};base64,${uploadedImage.base64}`} alt="preview" className="w-10 h-10 rounded object-cover" />
                     <span className="text-sm text-gray-400">{uploadedImage.file.name}</span>
                 </div>
-                <button onClick={() => setUploadedImage(null)} className="text-gray-500 hover:text-red-400" aria-label="Remove image">&times;</button>
+                <button onClick={() => setUploadedImage(null)} className="text-gray-500 hover:text-red-400" aria-label={t('removeImage')}>&times;</button>
             </div>
         )}
         {uploadedFile && (
@@ -242,7 +245,7 @@ const handleAttachmentToggle = () => {
                     <FileIcon className="w-5 h-5 text-gray-400" />
                     <span className="text-sm text-gray-400">{uploadedFile.name}</span>
                 </div>
-                <button onClick={() => setUploadedFile(null)} className="text-gray-500 hover:text-red-400" aria-label="Remove file">&times;</button>
+                <button onClick={() => setUploadedFile(null)} className="text-gray-500 hover:text-red-400" aria-label={t('removeFile')}>&times;</button>
             </div>
         )}
         <div className="flex items-center gap-3">
@@ -254,15 +257,15 @@ const handleAttachmentToggle = () => {
                     <div className="absolute bottom-full left-0 mb-2 w-56 bg-gray-900/80 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-700/50 overflow-hidden z-10">
                         <button onClick={() => { fileInputRef.current?.click(); setIsAttachmentMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-300 hover:bg-purple-600/20 transition-colors">
                             <PaperclipIcon />
-                            <span>From Gallery</span>
+                            <span>{t('fromGallery')}</span>
                         </button>
                          <button onClick={() => { docFileInputRef.current?.click(); setIsAttachmentMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-300 hover:bg-purple-600/20 transition-colors">
                             <FileIcon />
-                            <span>Attach Document</span>
+                            <span>{t('attachDocument')}</span>
                         </button>
                         <button onClick={() => { setIsCameraModalOpen(true); setIsAttachmentMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-300 hover:bg-purple-600/20 transition-colors">
                             <CameraIcon />
-                            <span>Use Camera</span>
+                            <span>{t('useCamera')}</span>
                         </button>
                         <button
                             onClick={handleGoogleDriveClick}
@@ -281,7 +284,7 @@ const handleAttachmentToggle = () => {
                             ? 'bg-purple-500/30 text-purple-300 border-purple-400'
                             : 'text-gray-400 hover:text-white border-white/50 hover:border-white'
                     }`}
-                    aria-label="Attach file"
+                    aria-label={t('attachFile')}
                 >
                     <PlusIcon
                         className={isPlusIconSpinning ? 'animate-spin-once' : ''}
@@ -300,16 +303,16 @@ const handleAttachmentToggle = () => {
                     handleSend();
                   }
                 }}
-                placeholder="Ask ChatNova AI..."
+                placeholder={t('askChatNova')}
                 className="flex-1 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none px-4 py-3"
                 rows={1}
               />
-               <button onClick={toggleListening} className={`p-2 mr-2 transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-purple-400'}`} aria-label={isListening ? 'Stop listening' : 'Start listening'}>
+               <button onClick={toggleListening} className={`p-2 mr-2 transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-purple-400'}`} aria-label={isListening ? t('stopListening') : t('startListening')}>
                     <MicrophoneIcon isListening={isListening}/>
                 </button>
             </div>
 
-            <button onClick={handleSend} disabled={isLoading || (!input.trim() && !uploadedImage && !uploadedFile)} className="p-2 text-white bg-gradient-to-r from-purple-600 to-blue-500 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed glow-border" aria-label="Send message">
+            <button onClick={handleSend} disabled={isLoading || (!input.trim() && !uploadedImage && !uploadedFile)} className="p-2 text-white bg-gradient-to-r from-purple-600 to-blue-500 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed glow-border" aria-label={t('sendMessage')}>
                  {isLoading ? <Spinner /> : <SendIcon />}
             </button>
         </div>

@@ -1,7 +1,9 @@
+
 import React, { useState, useRef } from 'react';
 import { processPassportPhoto } from '../services/geminiService';
 import { createPhotoSheet } from '../utils/imageUtils';
 import { Spinner } from './icons/Spinner';
+import { useTranslation } from '../hooks/useTranslation';
 
 const COLORS = [
   { name: 'White', value: '#FFFFFF' },
@@ -41,6 +43,7 @@ export const PassportPhotoGenerator: React.FC = () => {
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const [removeBg, setRemoveBg] = useState(true);
   const [applyBgColor, setApplyBgColor] = useState(true);
@@ -75,7 +78,7 @@ export const PassportPhotoGenerator: React.FC = () => {
       const sheetDataUrl = await createPhotoSheet(aiProcessedBase64, { ...sheetConfig, applyBgColor, bgColor: selectedColor });
       setProcessedImage(sheetDataUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+      setError(err instanceof Error ? err.message : t('unknownError'));
     } finally {
       setIsLoading(false);
     }
@@ -90,16 +93,25 @@ export const PassportPhotoGenerator: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+  
+  const colorNames: { [key: string]: string } = {
+      'White': t('colorWhite'),
+      'Light Gray': t('colorLightGray'),
+      'Sky Blue': t('colorSkyBlue'),
+      'Light Blue': t('colorLightBlue'),
+      'Cream': t('colorCream'),
+      'Red': t('colorRed'),
+  };
 
   return (
     <div className="flex flex-col md:flex-row bg-[#0f0f1a] md:h-full min-h-full">
       <div className="w-full md:w-96 bg-[#11111b] p-6 border-r border-gray-800/50 flex flex-col gap-6 overflow-y-auto">
-        <h2 className="text-2xl font-bold text-white glow-text">Photo Settings</h2>
+        <h2 className="text-2xl font-bold text-white glow-text">{t('photoSettings')}</h2>
         
         <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
 
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-400">1. Photos Per Sheet</label>
+          <label className="block text-sm font-medium text-gray-400">{t('photosPerSheet')}</label>
           <select 
             value={sheetConfig.label}
             onChange={(e) => setSheetConfig(SHEET_OPTIONS.find(o => o.label === e.target.value) || SHEET_OPTIONS[0])}
@@ -110,14 +122,14 @@ export const PassportPhotoGenerator: React.FC = () => {
         </div>
 
         <div className="space-y-4 pt-4 border-t border-gray-700/50">
-           <label className="block text-sm font-medium text-gray-400">2. Background Options</label>
-          <Toggle label="AI Background Removal" checked={removeBg} onChange={setRemoveBg} />
-          <Toggle label="Apply Background Color" checked={applyBgColor} onChange={setApplyBgColor} />
+           <label className="block text-sm font-medium text-gray-400">{t('backgroundOptions')}</label>
+          <Toggle label={t('aiBackgroundRemoval')} checked={removeBg} onChange={setRemoveBg} />
+          <Toggle label={t('applyBackgroundColor')} checked={applyBgColor} onChange={setApplyBgColor} />
         </div>
 
         {applyBgColor && (
           <div className="space-y-3 pt-4 border-t border-gray-700/50">
-            <h3 className="text-gray-300 font-medium">3. Choose Color</h3>
+            <h3 className="text-gray-300 font-medium">{t('chooseColor')}</h3>
             <div className="grid grid-cols-3 gap-3">
               {COLORS.map(color => (
                 <button
@@ -126,7 +138,7 @@ export const PassportPhotoGenerator: React.FC = () => {
                   className={`p-2 rounded-lg text-sm text-center transition-all duration-200 ${selectedColor === color.value ? 'ring-2 ring-offset-2 ring-offset-gray-800 ring-purple-500' : 'ring-1 ring-gray-600'}`}
                 >
                   <div className="w-full h-8 rounded" style={{ backgroundColor: color.value }}></div>
-                  <span className="mt-1.5 block text-gray-400">{color.name}</span>
+                  <span className="mt-1.5 block text-gray-400">{colorNames[color.name]}</span>
                 </button>
               ))}
             </div>
@@ -142,18 +154,18 @@ export const PassportPhotoGenerator: React.FC = () => {
                     className="w-full h-96 border-2 border-dashed border-gray-600 rounded-2xl flex flex-col items-center justify-center text-gray-500 bg-gray-800/20 hover:border-purple-500 hover:text-purple-400 transition-all duration-300 cursor-pointer"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    <p className="font-semibold text-lg">Click to upload your photo</p>
-                    <p className="text-sm">Start by selecting an image from your device.</p>
+                    <p className="font-semibold text-lg">{t('clickToUpload')}</p>
+                    <p className="text-sm">{t('startBySelecting')}</p>
                 </div>
             ) : (
                 <div className="text-center w-full">
-                    <h3 className="font-semibold text-white mb-4">Your Photo</h3>
+                    <h3 className="font-semibold text-white mb-4">{t('yourPhoto')}</h3>
                     <div className="border-2 border-blue-400/50 rounded-xl inline-block p-2 shadow-lg bg-black/20">
                         <img src={sourceImage.url} alt="Source" className="rounded-lg max-h-[40vh] mx-auto" />
                     </div>
                      <div className="mt-4">
                         <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 rounded-lg text-white bg-gray-600 hover:bg-gray-500 transition font-semibold text-sm">
-                            Change Photo
+                            {t('changePhoto')}
                         </button>
                     </div>
                 </div>
@@ -161,13 +173,13 @@ export const PassportPhotoGenerator: React.FC = () => {
 
             {(isLoading || processedImage) && sourceImage && (
                 <div className="text-center w-full">
-                    <h3 className="font-semibold text-white mb-2">Generated Result</h3>
+                    <h3 className="font-semibold text-white mb-2">{t('generatedResult')}</h3>
                     <div className="w-full min-h-[40vh] bg-gray-800/50 rounded-xl flex items-center justify-center overflow-auto p-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center text-gray-400">
                             <Spinner />
-                            <p className="mt-4 text-lg">Generating your photos...</p>
-                            <p className="text-sm text-gray-500">AI is at work, this might take a moment.</p>
+                            <p className="mt-4 text-lg">{t('generatingPhotos')}</p>
+                            <p className="text-sm text-gray-500">{t('aiIsAtWork')}</p>
                         </div>
                     ) : processedImage ? (
                         <img src={processedImage} alt="Processed" className="rounded-lg shadow-2xl max-h-full max-w-full" />
@@ -185,10 +197,10 @@ export const PassportPhotoGenerator: React.FC = () => {
                 className="px-8 py-4 rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition font-bold text-lg flex items-center gap-2 glow-border"
                 >
                 {isLoading && <Spinner />}
-                {isLoading ? 'Generating...' : '✨ Generate Smart Photo'}
+                {isLoading ? t('generating') : t('generateSmartPhoto')}
                 </button>
                 {processedImage && (
-                <button onClick={handleDownload} className="px-6 py-3 rounded-lg text-white bg-green-600 hover:bg-green-500 transition font-semibold">Download Photo</button>
+                <button onClick={handleDownload} className="px-6 py-3 rounded-lg text-white bg-green-600 hover:bg-green-500 transition font-semibold">{t('downloadPhoto')}</button>
                 )}
             </div>
         </div>

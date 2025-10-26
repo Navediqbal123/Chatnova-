@@ -4,15 +4,18 @@ import { Sidebar } from './components/Sidebar';
 import { ChatView } from './components/ChatView';
 import { PassportPhotoGenerator } from './components/PassportPhotoGenerator';
 import { AuthView } from './components/AuthView';
+import { ProfileView } from './components/ProfileView';
+import { useTranslation } from './hooks/useTranslation';
 import type { ChatSession } from './types';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'chat' | 'passport'>('chat');
+  const [currentView, setCurrentView] = useState<'chat' | 'passport' | 'profile'>('chat');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatIndex, setCurrentChatIndex] = useState<number>(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Check for logged in user in session storage
@@ -75,6 +78,7 @@ const App: React.FC = () => {
     setCurrentUser(null);
     setChatHistory([]);
     setCurrentChatIndex(0);
+    setCurrentView('chat');
   };
 
 
@@ -84,7 +88,7 @@ const App: React.FC = () => {
       title: 'ChatNova AI',
       messages: [],
     };
-    setChatHistory(prev => [newChat, ...prev]);
+    setChatHistory(prev => [newChat, ...prev.filter(c => c.messages.length > 0)]);
     setCurrentChatIndex(0);
     setCurrentView('chat');
   }, []);
@@ -107,8 +111,10 @@ const App: React.FC = () => {
   const currentSession = chatHistory[currentChatIndex];
   let headerTitle = 'ChatNova AI';
   if (currentView === 'passport') {
-    headerTitle = 'Passport Photo Generator';
-  } else if (currentSession) {
+    headerTitle = t('passportPhotoGenerator');
+  } else if (currentView === 'profile') {
+    headerTitle = t('profileAndSettings');
+  } else if (currentSession && currentSession.messages.length > 0) {
     headerTitle = currentSession.title;
   }
   
@@ -127,7 +133,6 @@ const App: React.FC = () => {
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
         currentChatIndex={currentChatIndex}
-        onLogout={handleLogout}
         username={currentUser}
       />
       <main className="flex-1 flex flex-col transition-all duration-300 overflow-hidden">
@@ -147,6 +152,7 @@ const App: React.FC = () => {
               />
             )}
             {currentView === 'passport' && <PassportPhotoGenerator />}
+            {currentView === 'profile' && <ProfileView onLogout={handleLogout} />}
         </div>
       </main>
     </div>
