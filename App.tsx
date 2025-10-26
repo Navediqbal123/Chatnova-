@@ -3,13 +3,25 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ChatView } from './components/ChatView';
 import { PassportPhotoGenerator } from './components/PassportPhotoGenerator';
+import { AuthView } from './components/AuthView';
 import type { ChatSession } from './types';
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'chat' | 'passport'>('chat');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatIndex, setCurrentChatIndex] = useState<number>(0);
+
+  useEffect(() => {
+    // Check for logged in user in session storage
+    const loggedInUser = sessionStorage.getItem('chatNovaUser');
+    if (loggedInUser) {
+        setIsAuthenticated(true);
+        setCurrentUser(loggedInUser);
+    }
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
@@ -20,8 +32,9 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated || !currentUser) return;
     try {
-      const storedHistory = localStorage.getItem('chatNovaHistory');
+      const storedHistory = localStorage.getItem(`chatNovaHistory_${currentUser}`);
       if (storedHistory) {
         const parsedHistory = JSON.parse(storedHistory);
         if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
@@ -38,17 +51,32 @@ const App: React.FC = () => {
       handleNewChat();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAuthenticated, currentUser]);
 
   useEffect(() => {
-    if (chatHistory.length > 0) {
+    if (chatHistory.length > 0 && isAuthenticated && currentUser) {
         try {
-            localStorage.setItem('chatNovaHistory', JSON.stringify(chatHistory));
+            localStorage.setItem(`chatNovaHistory_${currentUser}`, JSON.stringify(chatHistory));
         } catch (error) {
             console.error("Failed to save chat history:", error);
         }
     }
-  }, [chatHistory]);
+  }, [chatHistory, isAuthenticated, currentUser]);
+
+  const handleAuthSuccess = (username: string) => {
+    sessionStorage.setItem('chatNovaUser', username);
+    setIsAuthenticated(true);
+    setCurrentUser(username);
+  };
+  
+  const handleLogout = () => {
+    sessionStorage.removeItem('chatNovaUser');
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setChatHistory([]);
+    setCurrentChatIndex(0);
+  };
+
 
   const handleNewChat = useCallback(() => {
     const newChat: ChatSession = {
@@ -83,6 +111,10 @@ const App: React.FC = () => {
   } else if (currentSession) {
     headerTitle = currentSession.title;
   }
+  
+  if (!isAuthenticated) {
+    return <AuthView onAuthSuccess={handleAuthSuccess} />;
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#0f0f1a] text-gray-200 font-sans">
@@ -95,6 +127,8 @@ const App: React.FC = () => {
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
         currentChatIndex={currentChatIndex}
+        onLogout={handleLogout}
+        username={currentUser}
       />
       <main className="flex-1 flex flex-col transition-all duration-300 overflow-hidden">
         <header className="p-4 border-b border-gray-800/50 flex items-center shrink-0">

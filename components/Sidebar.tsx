@@ -2,6 +2,7 @@
 import React from 'react';
 import type { ChatSession } from '../types';
 import { NovaIcon } from './icons/NovaIcon';
+import { LogoutIcon } from './icons/LogoutIcon';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface SidebarProps {
   onNewChat: () => void;
   onSelectChat: (index: number) => void;
   currentChatIndex: number;
+  onLogout: () => void;
+  username: string | null;
 }
 
 const SidebarButton: React.FC<{ onClick: () => void; isActive: boolean; icon: React.ReactNode; label: string; }> = ({ onClick, isActive, icon, label }) => (
@@ -51,7 +54,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   chatHistory,
   onNewChat,
   onSelectChat,
-  currentChatIndex
+  currentChatIndex,
+  onLogout,
+  username
 }) => {
     
   const handleViewChange = (view: 'chat' | 'passport') => {
@@ -80,14 +85,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     
   return (
     <aside className={`bg-[#11111b] h-full flex flex-col border-r border-gray-800/50 shrink-0 transition-all duration-300 ease-in-out ${isOpen ? 'w-64 p-4' : 'w-0 p-0 overflow-hidden'}`}>
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-6 shrink-0">
           <NovaIcon className="w-8 h-8 text-purple-400 shrink-0" />
           <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 glow-text whitespace-nowrap">
               ChatNova AI
           </h1>
       </div>
 
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col gap-2 w-full shrink-0">
           <SidebarButton 
               onClick={handleNewChatAction} 
               isActive={currentView === 'chat'}
@@ -103,17 +108,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <div className="mt-6 flex-1 flex flex-col overflow-y-hidden w-full">
-      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Chat History</h2>
-      <div className="flex-1 overflow-y-auto pr-1 space-y-1.5">
-          {chatHistory.map((chat, index) => (
-          <ChatHistoryItem 
-              key={chat.id}
-              onClick={() => handleSelectChatAction(index)}
-              isActive={index === currentChatIndex && currentView === 'chat'}
-              title={chat.title}
-          />
-          ))}
+        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Chat History</h2>
+        <div className="flex-1 overflow-y-auto pr-1 space-y-1.5">
+            {chatHistory.map((chat, index) => (
+            <ChatHistoryItem 
+                key={chat.id}
+                onClick={() => handleSelectChatAction(index)}
+                isActive={index === currentChatIndex && currentView === 'chat'}
+                title={chat.title}
+            />
+            ))}
+        </div>
       </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-700/50 shrink-0">
+        <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white">
+                {username ? username.charAt(0).toUpperCase() : '?'}
+            </div>
+            <span className="text-sm font-medium text-white truncate">{username}</span>
+        </div>
+         <button
+            onClick={onLogout}
+            className="w-full text-left mt-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-3 group px-4 text-gray-400 hover:bg-red-600/20 hover:text-red-300"
+        >
+            <LogoutIcon className="h-5 w-5" />
+            <span className="whitespace-nowrap">Logout</span>
+        </button>
       </div>
     </aside>
   );

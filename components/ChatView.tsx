@@ -31,11 +31,6 @@ const ChatBubble: React.FC<{ message: Message }> = ({ message }) => {
   const isUser = message.role === 'user';
   return (
     <div className={`flex items-start gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex-shrink-0 flex items-center justify-center p-1.5">
-          <NovaIcon className="w-full h-full text-white" />
-        </div>
-      )}
       <div
         className={`max-w-xl p-4 rounded-2xl shadow-lg transition-all duration-300 ${
           isUser
@@ -60,6 +55,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [areGoogleApisReady, setAreGoogleApisReady] = useState(false);
+  const [isPlusIconSpinning, setPlusIconSpinning] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docFileInputRef = useRef<HTMLInputElement>(null);
@@ -189,17 +185,41 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
     }
 };
 
+const handleAttachmentToggle = () => {
+    // If menu is open, just close it without animation.
+    if (isAttachmentMenuOpen) {
+      setIsAttachmentMenuOpen(false);
+      return;
+    }
+    // If not spinning, start the spin. The menu will open on animation end.
+    if (!isPlusIconSpinning) {
+      setPlusIconSpinning(true);
+    }
+  };
+
+  const handleSpinComplete = () => {
+    setPlusIconSpinning(false); // Reset animation trigger
+    setIsAttachmentMenuOpen(true); // Open menu *after* animation
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#0f0f1a]">
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6">
-        {session.messages.map((msg, index) => (
-          <ChatBubble key={index} message={msg} />
-        ))}
+        {session.messages.length === 0 && !isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
+            <NovaIcon className="w-24 h-24 text-purple-400 mb-4" />
+            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400 glow-text">
+              Welcome to ChatNova AI
+            </h1>
+            <p className="mt-2 text-lg">Start a conversation below.</p>
+          </div>
+        ) : (
+          session.messages.map((msg, index) => (
+            <ChatBubble key={index} message={msg} />
+          ))
+        )}
         {isLoading && (
             <div className="flex items-start gap-3 my-4 justify-start">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex-shrink-0 flex items-center justify-center p-1.5">
-                  <NovaIcon className="w-full h-full text-white" />
-                </div>
                 <div className="max-w-lg p-4 rounded-2xl bg-gray-800/80 rounded-bl-none shadow-lg">
                     <TypingIndicator />
                 </div>
@@ -255,7 +275,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
                     </div>
                 )}
                 <button
-                    onClick={() => setIsAttachmentMenuOpen(prev => !prev)}
+                    onClick={handleAttachmentToggle}
                     className={`p-2 transition-all duration-200 rounded-full border ${
                         isAttachmentMenuOpen
                             ? 'bg-purple-500/30 text-purple-300 border-purple-400'
@@ -263,7 +283,10 @@ export const ChatView: React.FC<ChatViewProps> = ({ session, updateSession }) =>
                     }`}
                     aria-label="Attach file"
                 >
-                    <PlusIcon />
+                    <PlusIcon
+                        className={isPlusIconSpinning ? 'animate-spin-once' : ''}
+                        onAnimationEnd={isPlusIconSpinning ? handleSpinComplete : undefined}
+                    />
                 </button>
             </div>
            
