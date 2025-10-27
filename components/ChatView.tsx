@@ -231,12 +231,23 @@ const handleAttachmentToggle = () => {
       </div>
       <div className="p-4 border-t border-gray-800/50">
         {uploadedImage && (
-            <div className="mb-2 bg-gray-800/50 p-2 rounded-lg flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <img src={`data:${uploadedImage.file.type};base64,${uploadedImage.base64}`} alt="preview" className="w-10 h-10 rounded object-cover" />
-                    <span className="text-sm text-gray-400">{uploadedImage.file.name}</span>
+            <div className="flex justify-end mb-3">
+                <div className="bg-gray-800/50 p-2 rounded-xl relative w-fit max-w-xs shadow-lg">
+                    <img
+                        src={`data:${uploadedImage.file.type};base64,${uploadedImage.base64}`}
+                        alt="preview"
+                        className="rounded-lg max-h-40 w-auto"
+                    />
+                    <button
+                        onClick={() => setUploadedImage(null)}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/90 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                        aria-label={t('removeImage')}
+                    >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <button onClick={() => setUploadedImage(null)} className="text-gray-500 hover:text-red-400" aria-label={t('removeImage')}>&times;</button>
             </div>
         )}
         {uploadedFile && (
