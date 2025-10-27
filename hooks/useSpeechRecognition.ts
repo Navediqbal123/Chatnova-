@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from './useTranslation';
 
 // Fix: Add type definitions for the Web Speech API, which are not included in standard TypeScript DOM types.
 // This resolves errors about 'SpeechRecognition' and 'webkitSpeechRecognition' not existing on 'window'.
@@ -26,9 +27,27 @@ declare global {
 // This resolves the error "'SpeechRecognition' refers to a value, but is being used as a type here."
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+const LANG_MAP: { [key: string]: string } = {
+    'en': 'en-US',
+    'es': 'es-ES',
+    'hi': 'hi-IN',
+    'ar': 'ar-SA',
+    'fr': 'fr-FR',
+    'de': 'de-DE',
+    'zh': 'zh-CN',
+    'pt': 'pt-BR',
+    'ru': 'ru-RU',
+    'ja': 'ja-JP',
+    'bn': 'bn-IN',
+    'id': 'id-ID',
+    'it': 'it-IT',
+    'ko': 'ko-KR',
+};
+
 export const useSpeechRecognition = (onTranscriptChange: (transcript: string) => void) => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const { language } = useTranslation();
 
   useEffect(() => {
     if (!SpeechRecognitionAPI) {
@@ -37,9 +56,12 @@ export const useSpeechRecognition = (onTranscriptChange: (transcript: string) =>
     }
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
+    // Set continuous to false. This means the recognition will stop after the user stops speaking.
+    // This prevents the "doubling" of text where new speech was appended to old speech.
+    // For a chat input, single utterances are the expected behavior.
+    recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = LANG_MAP[language] || 'en-US';
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -67,7 +89,7 @@ export const useSpeechRecognition = (onTranscriptChange: (transcript: string) =>
     return () => {
       recognition.stop();
     };
-  }, [onTranscriptChange]);
+  }, [onTranscriptChange, language]);
 
   const toggleListening = () => {
     if (isListening) {
