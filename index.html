@@ -5,18 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChatNova AI 🌌</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
       body {
         background-color: #0f0f1a;
       }
       .glow-border {
-        box-shadow: 0 0 2px rgba(167, 139, 250, 0.8), 0 0 8px rgba(139, 92, 246, 0.6), 0 0 15px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 0 2px rgba(167, 139, 250, 0.8),
+          0 0 8px rgba(139, 92, 246, 0.6),
+          0 0 15px rgba(99, 102, 241, 0.5);
       }
       .glow-text {
-        text-shadow: 0 0 5px rgba(196, 181, 253, 0.7), 0 0 10px rgba(139, 92, 246, 0.5);
+        text-shadow: 0 0 5px rgba(196, 181, 253, 0.7),
+          0 0 10px rgba(139, 92, 246, 0.5);
       }
-       /* Custom scrollbar for webkit browsers */
       ::-webkit-scrollbar {
         width: 8px;
       }
@@ -32,26 +37,58 @@
         background-color: #6366f1;
       }
       @keyframes spin-once {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
       }
       .animate-spin-once {
         animation: spin-once 0.4s ease-in-out;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0"
-  }
-}
-</script>
-</head>
+
+    <!-- React / Google GenAI -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react/": "https://aistudiocdn.com/react@^19.2.0/",
+          "react": "https://aistudiocdn.com/react@^19.2.0",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+          "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0"
+        }
+      }
+    </script>
+
+    <!-- ✅ Firebase SDK -->
+    <script type="module">
+      // Import Firebase SDK
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+
+      // Your Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyBn1AHYxTT0JdNfaN9y_pQAjS8zmFQVwGQ",
+        authDomain: "chatnova-ai-eb360.firebaseapp.com",
+        projectId: "chatnova-ai-eb360",
+        storageBucket: "chatnova-ai-eb360.firebasestorage.app",
+        messagingSenderId: "40949215177",
+        appId: "1:40949215177:web:1530cdfb490fcbdce84218",
+        measurementId: "G-YTMVZKW4G3",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      console.log("✅ Firebase initialized successfully!");
+    </script>
+  </head>
+
   <body>
     <div id="root"></div>
+
+    <!-- React entry -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
