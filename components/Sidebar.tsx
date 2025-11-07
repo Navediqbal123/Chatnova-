@@ -39,7 +39,7 @@ const ChatHistoryItem: React.FC<{
         onClick={onClick}
         className={`w-full text-left px-3 py-2.5 rounded-md text-xs truncate transition-colors duration-200 ${isActive ? 'bg-indigo-500/20 text-indigo-300' : 'text-gray-500 hover:bg-gray-800/60 hover:text-gray-300'}`}
     >
-        {title === 'ChatNova AI' ? 'New Chat' : title}
+        {title}
     </button>
 );
 
